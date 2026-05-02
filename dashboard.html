@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Placement Dashboard</title>
+    <style>
+        body{
+            font-family: Arial;
+            background:#f3f4f6;
+            margin:0;
+            padding:30px;
+        }
+
+        .container{
+            max-width:900px;
+            margin:auto;
+        }
+
+        h1{
+            text-align:center;
+        }
+
+        .card{
+            background:white;
+            padding:20px;
+            border-radius:15px;
+            margin-bottom:20px;
+            box-shadow:0 10px 20px rgba(0,0,0,0.08);
+        }
+
+        input, select{
+            width:100%;
+            padding:12px;
+            margin:10px 0;
+            border:1px solid #ddd;
+            border-radius:10px;
+        }
+
+        button{
+            width:100%;
+            padding:12px;
+            border:none;
+            background:#2563eb;
+            color:white;
+            border-radius:10px;
+            cursor:pointer;
+        }
+
+        .company{
+            padding:15px;
+            border-bottom:1px solid #eee;
+        }
+
+        .logout{
+            background:red;
+            margin-top:20px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <h1 id="welcome"></h1>
+
+    <div class="card">
+        <h2>Add Applied Company</h2>
+
+        <input id="companyName" placeholder="Company Name">
+        <input id="role" placeholder="Role">
+        <div class="card">
+    <h2>Skill Progress Tracker</h2>
+
+    <label>DSA (%)</label>
+    <input id="dsa" type="number" placeholder="Enter DSA Progress">
+
+    <label>HTML/CSS (%)</label>
+    <input id="htmlcss" type="number" placeholder="Enter HTML/CSS Progress">
+
+    <label>JavaScript (%)</label>
+    <input id="js" type="number" placeholder="Enter JavaScript Progress">
+
+    <label>React (%)</label>
+    <input id="react" type="number" placeholder="Enter React Progress">
+
+    <label>Node.js (%)</label>
+    <input id="node" type="number" placeholder="Enter Node.js Progress">
+
+    <button onclick="calculateScore()">Calculate Placement Score</button>
+</div>
+
+<div class="card">
+    <h2 id="scoreResult">Placement Score: --</h2>
+</div>
+<div class="card">
+    <h2>Interview Round Tracker</h2>
+
+    <input id="interviewCompany" placeholder="Company Name">
+
+    <select id="resumeStatus">
+        <option>Resume Shortlisted</option>
+        <option>Resume Rejected</option>
+    </select>
+
+    <select id="roundStatus">
+        <option>Aptitude Cleared</option>
+        <option>Technical Round Cleared</option>
+        <option>HR Round Cleared</option>
+        <option>Selected</option>
+        <option>Rejected</option>
+    </select>
+
+    <button onclick="addInterview()">Save Interview Status</button>
+</div>
+
+<div class="card">
+    <h2>Interview Progress</h2>
+    <div id="interviewList"></div>
+</div>
+        <select id="status">
+            <option>Applied</option>
+            <option>Interview</option>
+            <option>Selected</option>
+            <option>Rejected</option>
+        </select>
+
+        <button onclick="addCompany()">Add Company</button>
+    </div>
+
+    <div class="card">
+        <h2>Your Companies</h2>
+        <div id="companyList"></div>
+    </div>
+
+    <button class="logout" onclick="logout()">Logout</button>
+
+</div>
+
+<script>
+    if (!localStorage.getItem("token")) {
+    window.location.href = "/";
+}
+let student = localStorage.getItem("student");
+
+if (!student) {
+    window.location.href = "/";
+}
+
+welcome.innerText = "Welcome " + student + " 🚀";
+
+async function addCompany() {
+    await fetch("/add-company", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            company: companyName.value,
+            role: role.value,
+            status: status.value
+        })
+    });
+    
+
+    loadCompanies();
+
+    companyName.value = "";
+    role.value = "";
+}
+
+async function loadCompanies() {
+    let res = await fetch("/companies");
+    let data = await res.json();
+
+    companyList.innerHTML = "";
+
+    data.forEach(item => {
+        companyList.innerHTML += `
+            <div class="company">
+                <strong>${item.company}</strong><br>
+                Role: ${item.role}<br>
+                Status: ${item.status}
+            </div>
+        `;
+    });
+}
+
+function logout() {
+    localStorage.removeItem("student");
+    window.location.href = "/";
+}
+
+loadCompanies();
+async function addInterview() {
+    await fetch("/add-interview", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            company: interviewCompany.value,
+            resume: resumeStatus.value,
+            round: roundStatus.value
+        })
+    });
+
+    loadInterviews();
+
+    interviewCompany.value = "";
+}
+
+async function loadInterviews() {
+    let res = await fetch("/interviews");
+    let data = await res.json();
+
+    interviewList.innerHTML = "";
+
+    data.forEach(item => {
+        interviewList.innerHTML += `
+            <div class="company">
+                <strong>${item.company}</strong><br>
+                Resume: ${item.resume}<br>
+                Round: ${item.round}
+            </div>
+        `;
+    });
+}
+
+loadInterviews();
+function calculateScore() {
+    let total =
+        Number(dsa.value) +
+        Number(htmlcss.value) +
+        Number(js.value) +
+        Number(react.value) +
+        Number(node.value);
+
+    let score = Math.round(total / 5);
+
+    scoreResult.innerText = "Placement Score: " + score + "/100";
+}
+</script>
+
+</body>
+</html>

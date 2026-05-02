@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Placement Tracker</title>
+    <style>
+        body{
+            background: linear-gradient(to right, #e0f2fe, #f8fafc);
+        }
+
+        .box{
+            background:white;
+            padding:30px;
+            border-radius:15px;
+            width:350px;
+            box-shadow:0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        input{
+            width:100%;
+            padding:12px;
+            margin:10px 0;
+            border:1px solid #ddd;
+            border-radius:10px;
+        }
+
+        button{
+            width:100%;
+            padding:12px;
+            border:none;
+            background:#2563eb;
+            color:white;
+            border-radius:10px;
+            cursor:pointer;box-shadow: 0 10px 20px rgba(0,0,0,0.08);
+        }
+
+        h2{
+            text-align:center;
+        }
+
+        #result{
+            text-align:center;
+            margin-top:15px;
+            font-weight:bold;
+        }
+    </style>
+</head>
+<body>
+
+<div class="box">
+    <h2>Placement Tracker</h2>
+
+    <input id="username" placeholder="Username">
+    <input id="password" type="password" placeholder="Password">
+
+    <button onclick="register()">Register</button>
+    <br><br>
+    <button onclick="login()">Login</button>
+
+    <p id="result"></p>
+</div>
+
+<script>
+const baseURL = "";
+
+async function register() {
+    let res = await fetch("/register", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            username: username.value,
+            password: password.value
+        })
+    });
+
+    result.innerText = await res.text();
+}
+
+async function login() {
+    let res = await fetch("/login", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            username: username.value,
+            password: password.value
+        })
+    });
+
+    let data = await res.json();
+
+    if (data.token) {
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("student", username.value);
+        window.location.href = "/dashboard.html";
+    } else {
+        result.innerText = data.message || "Login Failed";
+    }
+}
+</script>
+
+</body>
+</html>
